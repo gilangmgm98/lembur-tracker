@@ -48,6 +48,16 @@ class SmokeTest extends TestCase
     }
 
     #[Test]
+    public function halaman_login_punya_favicon_dan_berkasnya_ada(): void
+    {
+        // public/favicon.ico bawaan skeleton berukuran 0 byte, jadi tab browser kosong.
+        $this->get('/app/login')->assertOk()->assertSee('favicon.svg', escape: false);
+
+        $this->assertFileExists(public_path('favicon.svg'));
+        $this->assertFileDoesNotExist(public_path('favicon.ico'));
+    }
+
+    #[Test]
     public function tamu_diarahkan_ke_login(): void
     {
         $this->get('/app')->assertRedirect('/app/login');
