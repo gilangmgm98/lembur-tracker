@@ -45,6 +45,9 @@ class AppPanelProvider extends PanelProvider
             ->authenticatedRoutes(fn () => Route::get('/ganti-password', GantiPasswordAwal::class)
                 ->name('auth.ganti-password'))
             ->brandName('LemburKu')
+            ->brandLogo(fn () => view('filament.brand'))
+            ->brandLogoHeight('1.75rem')
+            ->favicon(asset('favicon.svg'))
             ->colors([
                 'primary' => Color::Indigo,
                 'success' => Color::Emerald,
