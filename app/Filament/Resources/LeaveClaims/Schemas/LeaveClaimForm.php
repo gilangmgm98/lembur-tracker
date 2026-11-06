@@ -37,7 +37,7 @@ class LeaveClaimForm
             ->components([
                 Select::make('user_id')
                     ->label('Karyawan')
-                    ->relationship('user', 'name', fn ($q) => $q->where('is_active', true))
+                    ->relationship('user', 'name', fn ($query) => $query->where('is_active', true))
                     ->searchable()
                     ->preload()
                     ->default(fn () => Auth::id())

@@ -7,6 +7,7 @@ use App\Enums\BalanceStatus;
 use App\Enums\ClaimStatus;
 use App\Enums\ClaimType;
 use App\Enums\LeaveTimesheetStatus;
+use App\Filament\Resources\LeaveClaims\LeaveClaimResource;
 use App\Filament\Resources\LeaveClaims\Pages\CreateLeaveClaim;
 use App\Filament\Resources\LeaveClaims\Pages\EditLeaveClaim;
 use App\Filament\Resources\LeaveClaims\Pages\ListLeaveClaims;
@@ -29,6 +30,19 @@ class LeaveClaimResourceTest extends TestCase
         parent::setUp();
         $this->freezeDate('2026-03-20');
         $this->baselineRule();
+    }
+
+    #[Test]
+    public function admin_bisa_membuka_form_ajukan_klaim(): void
+    {
+        // Pilihan "Karyawan" hanya tampil untuk admin, dan closure query-nya dulu
+        // memakai parameter `$q` yang tidak dikenali Filament (null) — 500 hanya
+        // untuk admin, tidak pernah terlihat oleh tes yang memakai karyawan biasa.
+        $this->actingAs($this->kimaiAdmin());
+
+        $this->get(LeaveClaimResource::getUrl('create'))->assertOk()->assertSee('Karyawan');
+
+        Livewire::test(CreateLeaveClaim::class)->assertOk();
     }
 
     #[Test]
