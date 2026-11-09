@@ -58,6 +58,11 @@ class CutiPengganti extends Page implements HasTable
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('draftEmail')
+                ->label('Draft email')
+                ->icon('heroicon-m-envelope')
+                ->color('gray')
+                ->url(fn () => DraftEmailCuti::getUrl()),
             Action::make('ajukan')
                 ->label('Ajukan Klaim')
                 ->icon('heroicon-m-plus')
