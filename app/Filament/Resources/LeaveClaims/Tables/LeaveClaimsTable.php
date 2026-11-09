@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\LeaveClaims\Tables;
 
+use App\Domain\Lembur\ClaimEmailDraft;
 use App\Domain\Lembur\LeaveTimesheetSync;
 use App\Enums\ClaimStatus;
 use App\Enums\ClaimType;
@@ -165,39 +166,27 @@ class LeaveClaimsTable
     /** SOP §9.2 mewajibkan tiga hal: tanggal overtime, total jam, dan evidence. */
     public static function emailBody(LeaveClaim $claim): string
     {
-        $lines = [
-            'Yth. Bapak/Ibu,',
-            '',
-            sprintf(
-                'Saya bermaksud mengajukan cuti pengganti pada %s (%s).',
-                Format::tanggalPanjang($claim->claim_date),
-                mb_strtolower($claim->claim_type->getLabel()),
-            ),
-            '',
-            'Cuti ini berasal dari lembur berikut:',
-        ];
+        $rows = [];
 
         foreach ($claim->allocations()->with('balance.overtimeRecord')->get() as $allocation) {
             $record = $allocation->balance?->overtimeRecord;
 
-            if ($record === null) {
-                continue;
+            if ($record !== null) {
+                $rows[] = [
+                    'date' => $record->overtime_date,
+                    'minutes' => $allocation->allocated_minutes,
+                    'evidence' => $record->evidence_url ?: '(belum diisi)',
+                ];
             }
-
-            $lines[] = sprintf(
-                '- %s · %s · evidence: %s',
-                Format::tanggalPanjang($record->overtime_date),
-                Format::durasi($allocation->allocated_minutes),
-                $record->evidence_url ?: '(belum diisi)',
-            );
         }
 
-        $lines[] = '';
-        $lines[] = 'Total jam yang digunakan: '.Format::durasi($claim->minutes_required).'.';
-        $lines[] = '';
-        $lines[] = 'Terima kasih atas perhatiannya.';
-        $lines[] = $claim->user?->name ?? '';
-
-        return implode("\n", $lines);
+        return ClaimEmailDraft::body(
+            nama: $claim->user?->name ?? '',
+            claimDate: $claim->claim_date,
+            type: $claim->claim_type,
+            totalMinutes: $claim->minutes_required,
+            rows: $rows,
+            jamMasuk: (string) $claim->arrival_time,
+        );
     }
 }
